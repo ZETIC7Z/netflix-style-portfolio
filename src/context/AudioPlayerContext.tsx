@@ -12,7 +12,6 @@ export interface Song {
   songName: string;
   authorName: string;
   albumArt: string;
-  startSeconds?: number;
 }
 
 export const DEFAULT_PLAYLIST: Song[] = [
@@ -21,7 +20,6 @@ export const DEFAULT_PLAYLIST: Song[] = [
     songName: 'OPM Trending Playlist 2026 — Must Listen Filipino Songs Mix',
     authorName: 'OPM Calm',
     albumArt: 'https://i.ytimg.com/vi/iNsO2CbCV0Y/hqdefault.jpg',
-    startSeconds: 2344,
   },
   {
     videoId: '_fgOrexuD_E',
@@ -49,7 +47,96 @@ export const DEFAULT_PLAYLIST: Song[] = [
   },
 ];
 
-const STORAGE_KEY = 'zeticuz_portfolio_music_playlist_v1';
+const PLAYLIST_STORAGE_KEY = 'zeticuz_portfolio_music_playlist_v2';
+const STATE_STORAGE_KEY = 'zeticuz_portfolio_music_state_v2';
+
+interface SavedPlaybackState {
+  videoId: string;
+  currentSongIndex: number;
+  currentTime: number;
+  volume: number;
+}
+
+function loadSavedPlaylist(): Song[] {
+  if (typeof window === 'undefined') return DEFAULT_PLAYLIST;
+  try {
+    const saved = localStorage.getItem(PLAYLIST_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.videoId) {
+        return parsed.map((item: any) => ({
+          videoId: String(item.videoId),
+          songName: String(item.songName || 'Unknown Track'),
+          authorName: String(item.authorName || 'YouTube'),
+          albumArt:
+            item.albumArt || `https://i.ytimg.com/vi/${String(item.videoId)}/hqdefault.jpg`,
+        }));
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_PLAYLIST;
+}
+
+function loadSavedState(playlist: Song[]): SavedPlaybackState {
+  if (typeof window === 'undefined') {
+    return {
+      videoId: playlist[0]?.videoId || 'iNsO2CbCV0Y',
+      currentSongIndex: 0,
+      currentTime: 0,
+      volume: 80,
+    };
+  }
+  try {
+    const raw = localStorage.getItem(STATE_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<SavedPlaybackState>;
+      let idx =
+        typeof parsed.currentSongIndex === 'number' &&
+        parsed.currentSongIndex >= 0 &&
+        parsed.currentSongIndex < playlist.length
+          ? parsed.currentSongIndex
+          : 0;
+
+      if (parsed.videoId) {
+        const foundIdx = playlist.findIndex((s) => s.videoId === parsed.videoId);
+        if (foundIdx !== -1) {
+          idx = foundIdx;
+        }
+      }
+
+      const savedTime =
+        typeof parsed.currentTime === 'number' &&
+        Number.isFinite(parsed.currentTime) &&
+        parsed.currentTime >= 0
+          ? parsed.currentTime
+          : 0;
+
+      const savedVol =
+        typeof parsed.volume === 'number' && parsed.volume >= 0 && parsed.volume <= 100
+          ? parsed.volume
+          : 80;
+
+      return {
+        videoId: playlist[idx]?.videoId || playlist[0]?.videoId || 'iNsO2CbCV0Y',
+        currentSongIndex: idx,
+        currentTime: savedTime,
+        volume: savedVol,
+      };
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // Fresh browser visit: always start at Song #1 (index 0) and 0:00 (0 seconds)
+  return {
+    videoId: playlist[0]?.videoId || 'iNsO2CbCV0Y',
+    currentSongIndex: 0,
+    currentTime: 0,
+    volume: 80,
+  };
+}
 
 interface AudioPlayerContextType {
   playlist: Song[];
@@ -70,40 +157,39 @@ interface AudioPlayerContextType {
   seekTo: (seconds: number) => void;
   addToPlaylist: (song: Song) => void;
   removeFromPlaylist: (index: number, e: React.MouseEvent) => void;
+  moveSongInPlaylist: (fromIndex: number, toIndex: number) => void;
   playSearchedSong: (song: Song) => void;
+  selectSongAtIndex: (index: number) => void;
+  resetPlaylistToDefault: () => void;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
 
 export const AudioPlayerProvider = ({ children }: { children: React.ReactNode }) => {
-  const [playlist, setPlaylist] = useState<Song[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as Song[];
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].videoId === 'iNsO2CbCV0Y') {
-          return parsed;
-        }
-      }
-    } catch {
-      /* ignore */
-    }
-    return DEFAULT_PLAYLIST;
-  });
+  const initialPlaylist = useRef<Song[]>(loadSavedPlaylist());
+  const initialState = useRef<SavedPlaybackState>(loadSavedState(initialPlaylist.current));
 
-  const [currentSongIndex, setCurrentSongIndex] = useState<number>(0);
+  const [playlist, setPlaylist] = useState<Song[]>(initialPlaylist.current);
+  const [currentSongIndex, setCurrentSongIndex] = useState<number>(
+    initialState.current.currentSongIndex,
+  );
   const [playing, setPlaying] = useState<boolean>(true);
   const [completedSongs, setCompletedSongs] = useState<string[]>([]);
-  const [currentTime, setCurrentTime] = useState<number>(2344);
-  const [duration, setDuration] = useState<number>(4508);
-  const [volume, setVolumeState] = useState<number>(80);
+  const [currentTime, setCurrentTime] = useState<number>(initialState.current.currentTime);
+  const [duration, setDuration] = useState<number>(0);
+  const [volume, setVolumeState] = useState<number>(initialState.current.volume);
 
   const playlistRef = useRef(playlist);
   const currentSongIndexRef = useRef(currentSongIndex);
+  const currentTimeRef = useRef(currentTime);
   const completedSongsRef = useRef(completedSongs);
   const volumeRef = useRef(volume);
   const wantPlayingRef = useRef<boolean>(true);
-  const hasUsedInitialOffsetRef = useRef<boolean>(false);
+
+  // Resume offset is applied when restoring a browser session; cleared once YT playback actively advances past it
+  const pendingResumeSecondsRef = useRef<number>(initialState.current.currentTime);
+  const hasAppliedResumeSeekRef = useRef<boolean>(false);
+  const loadedVideoIdRef = useRef<string | null>(null);
   const playerRef = useRef<any>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isApiLoadedRef = useRef(false);
@@ -118,6 +204,10 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
   }, [currentSongIndex]);
 
   useEffect(() => {
+    currentTimeRef.current = currentTime;
+  }, [currentTime]);
+
+  useEffect(() => {
     completedSongsRef.current = completedSongs;
   }, [completedSongs]);
 
@@ -125,20 +215,91 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
     volumeRef.current = volume;
   }, [volume]);
 
-  const currentSong = playlist[currentSongIndex] || null;
+  const currentSong = playlist[currentSongIndex] || playlist[0] || null;
+  const activeVideoId = currentSong?.videoId || '';
 
-  // Persist playlist changes
-  useEffect(() => {
+  // Helper to persist current playback state to localStorage
+  const savePlaybackState = (
+    idx = currentSongIndexRef.current,
+    time = currentTimeRef.current,
+    vol = volumeRef.current,
+    list = playlistRef.current,
+  ) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(playlist));
+      const song = list[idx] || list[0];
+      const payload: SavedPlaybackState = {
+        videoId: song?.videoId || 'iNsO2CbCV0Y',
+        currentSongIndex: idx,
+        currentTime: Math.max(0, Math.floor(time || 0)),
+        volume: vol,
+      };
+      localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(payload));
     } catch {
       /* ignore */
     }
-  }, [playlist]);
+  };
 
-  // Load YouTube IFrame API & initialize player
+  // Persist playlist changes immediately
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(PLAYLIST_STORAGE_KEY, JSON.stringify(playlist));
+      savePlaybackState(currentSongIndex, currentTimeRef.current, volumeRef.current, playlist);
+    } catch {
+      /* ignore */
+    }
+  }, [playlist, currentSongIndex]);
+
+  // Persist volume changes
+  useEffect(() => {
+    savePlaybackState(currentSongIndexRef.current, currentTimeRef.current, volume, playlistRef.current);
+  }, [volume]);
+
+  // Save exact timestamp when user closes tab, refreshes, or hides page
+  useEffect(() => {
+    const handleUnload = () => {
+      let latestTime = currentTimeRef.current;
+      try {
+        const state =
+          playerRef.current && typeof playerRef.current.getPlayerState === 'function'
+            ? playerRef.current.getPlayerState()
+            : -1;
+        if (
+          (state === 1 || state === 2) &&
+          playerRef.current &&
+          typeof playerRef.current.getCurrentTime === 'function'
+        ) {
+          const t = playerRef.current.getCurrentTime();
+          if (typeof t === 'number' && !isNaN(t) && t > 0) {
+            latestTime = t;
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      savePlaybackState(
+        currentSongIndexRef.current,
+        latestTime,
+        volumeRef.current,
+        playlistRef.current,
+      );
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+    };
+  }, []);
+
+  // Load YouTube IFrame API & initialize player when activeVideoId changes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !activeVideoId) return;
+
+    // If the same video is already loaded (e.g. playlist was reordered without changing the active song), do not reload the iframe
+    if (loadedVideoIdRef.current === activeVideoId && playerRef.current) {
+      return;
+    }
 
     if (!window.YT && !isApiLoadedRef.current) {
       isApiLoadedRef.current = true;
@@ -153,7 +314,7 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
     }
 
     const initPlayer = () => {
-      if (!currentSong || !window.YT || !window.YT.Player) return;
+      if (!activeVideoId || !window.YT || !window.YT.Player) return;
 
       if (playerRef.current) {
         try {
@@ -163,15 +324,14 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
         }
       }
 
-      const startAt =
-        currentSong.videoId === 'iNsO2CbCV0Y' && !hasUsedInitialOffsetRef.current
-          ? currentSong.startSeconds || 2344
-          : currentSong.startSeconds || 0;
+      const startAt = Math.max(0, Math.floor(pendingResumeSecondsRef.current || 0));
+      hasAppliedResumeSeekRef.current = startAt === 0;
+      loadedVideoIdRef.current = activeVideoId;
 
       playerRef.current = new window.YT.Player('sws-yt-player-container', {
         height: '1',
         width: '1',
-        videoId: currentSong.videoId,
+        videoId: activeVideoId,
         playerVars: {
           autoplay: 1,
           controls: 0,
@@ -185,11 +345,15 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
         },
         events: {
           onReady: (event: any) => {
-            hasUsedInitialOffsetRef.current = true;
             try {
               event.target.setVolume(volumeRef.current);
               if (startAt > 0) {
                 setCurrentTime(startAt);
+                currentTimeRef.current = startAt;
+                event.target.seekTo?.(startAt, true);
+              } else {
+                setCurrentTime(0);
+                currentTimeRef.current = 0;
               }
               if (wantPlayingRef.current) {
                 event.target.playVideo();
@@ -201,7 +365,7 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
           onStateChange: (event: any) => {
             if (event.data === 0) {
               // ENDED
-              const finishedVideoId = currentSong?.videoId;
+              const finishedVideoId = activeVideoId;
               if (finishedVideoId) {
                 setCompletedSongs((prev) => {
                   if (prev.includes(finishedVideoId)) return prev;
@@ -217,12 +381,36 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
               // PLAYING
               wantPlayingRef.current = true;
               setPlaying(true);
+              if (
+                !hasAppliedResumeSeekRef.current &&
+                pendingResumeSecondsRef.current > 0 &&
+                playerRef.current?.seekTo
+              ) {
+                const targetSec = pendingResumeSecondsRef.current;
+                hasAppliedResumeSeekRef.current = true;
+                pendingResumeSecondsRef.current = 0;
+                const nowSec = playerRef.current.getCurrentTime?.() || 0;
+                if (Math.abs(nowSec - targetSec) > 2) {
+                  playerRef.current.seekTo(targetSec, true);
+                }
+              } else {
+                hasAppliedResumeSeekRef.current = true;
+                pendingResumeSecondsRef.current = 0;
+              }
               if (playerRef.current && typeof playerRef.current.getDuration === 'function') {
                 setDuration(playerRef.current.getDuration() || 0);
               }
             } else if (event.data === 2) {
               // PAUSED
               setPlaying(false);
+              if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+                const t = playerRef.current.getCurrentTime();
+                if (typeof t === 'number' && !isNaN(t) && t >= 0) {
+                  setCurrentTime(t);
+                  currentTimeRef.current = t;
+                  savePlaybackState(currentSongIndexRef.current, t, volumeRef.current, playlistRef.current);
+                }
+              }
             }
           },
         },
@@ -244,7 +432,7 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
         clearInterval(progressIntervalRef.current);
       }
     };
-  }, [currentSongIndex]);
+  }, [activeVideoId]);
 
   // Ensure default autoplay resumes immediately upon first user gesture if browser policy deferred initial unmuted playback
   useEffect(() => {
@@ -257,6 +445,9 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
             : -1;
         if (state !== 1) {
           playerRef.current.setVolume?.(volumeRef.current);
+          if (pendingResumeSecondsRef.current > 0) {
+            playerRef.current.seekTo?.(pendingResumeSecondsRef.current, true);
+          }
           playerRef.current.playVideo?.();
           setPlaying(true);
         }
@@ -273,15 +464,33 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
     };
   }, []);
 
-  // Track progress when playing
+  // Track progress when actively playing in YT (state === 1) & sync to localStorage
   useEffect(() => {
     if (playing) {
       progressIntervalRef.current = setInterval(() => {
-        if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
-          const t = playerRef.current.getCurrentTime();
-          const d = playerRef.current.getDuration() || 0;
-          if (typeof t === 'number' && !isNaN(t)) setCurrentTime(t);
+        if (
+          playerRef.current &&
+          typeof playerRef.current.getPlayerState === 'function' &&
+          typeof playerRef.current.getCurrentTime === 'function'
+        ) {
+          const playerState = playerRef.current.getPlayerState();
+          const d = playerRef.current.getDuration?.() || 0;
           if (typeof d === 'number' && d > 0) setDuration(d);
+
+          // Only overwrite currentTime when YouTube is actively playing (state === 1)
+          if (playerState === 1) {
+            const t = playerRef.current.getCurrentTime();
+            if (typeof t === 'number' && !isNaN(t) && t >= 0) {
+              setCurrentTime(t);
+              currentTimeRef.current = t;
+              savePlaybackState(
+                currentSongIndexRef.current,
+                t,
+                volumeRef.current,
+                playlistRef.current,
+              );
+            }
+          }
         }
       }, 500);
     } else if (progressIntervalRef.current) {
@@ -293,6 +502,29 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
       }
     };
   }, [playing]);
+
+  const selectSongAtIndex = (index: number) => {
+    const currentPlaylist = playlistRef.current;
+    if (index < 0 || index >= currentPlaylist.length) return;
+    wantPlayingRef.current = true;
+    pendingResumeSecondsRef.current = 0;
+    hasAppliedResumeSeekRef.current = true;
+    setCurrentTime(0);
+    currentTimeRef.current = 0;
+
+    if (index === currentSongIndexRef.current && playerRef.current?.seekTo) {
+      playerRef.current.seekTo(0, true);
+      playerRef.current.playVideo?.();
+      setPlaying(true);
+      savePlaybackState(index, 0, volumeRef.current, currentPlaylist);
+      return;
+    }
+
+    loadedVideoIdRef.current = null;
+    setCurrentSongIndex(index);
+    setPlaying(true);
+    savePlaybackState(index, 0, volumeRef.current, currentPlaylist);
+  };
 
   const togglePlay = () => {
     if (!playerRef.current) return;
@@ -309,6 +541,9 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
         setPlaying(false);
       } else {
         wantPlayingRef.current = true;
+        if (pendingResumeSecondsRef.current > 0) {
+          playerRef.current.seekTo?.(pendingResumeSecondsRef.current, true);
+        }
         playerRef.current.playVideo();
         setPlaying(true);
       }
@@ -325,6 +560,11 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
     if (currentPlaylist.length === 0) return;
 
     wantPlayingRef.current = true;
+    pendingResumeSecondsRef.current = 0;
+    hasAppliedResumeSeekRef.current = true;
+    setCurrentTime(0);
+    currentTimeRef.current = 0;
+
     const nextIndex = currentIndex + 1;
     const reachedEnd = nextIndex >= currentPlaylist.length;
 
@@ -371,9 +611,11 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
           if (candidateSongs.length > 0) {
             const randomSong = candidateSongs[Math.floor(Math.random() * candidateSongs.length)];
             const updatedPlaylist = [...currentPlaylist, randomSong];
+            loadedVideoIdRef.current = null;
             setPlaylist(updatedPlaylist);
             setCurrentSongIndex(updatedPlaylist.length - 1);
             setPlaying(true);
+            savePlaybackState(updatedPlaylist.length - 1, 0, volumeRef.current, updatedPlaylist);
             return;
           }
         }
@@ -383,8 +625,10 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
     }
 
     const nextIdx = (currentIndex + 1) % currentPlaylist.length;
+    loadedVideoIdRef.current = null;
     setCurrentSongIndex(nextIdx);
     setPlaying(true);
+    savePlaybackState(nextIdx, 0, volumeRef.current, currentPlaylist);
   };
 
   useEffect(() => {
@@ -395,27 +639,38 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
     const currentPlaylist = playlistRef.current;
     if (currentPlaylist.length === 0) return;
     wantPlayingRef.current = true;
-    setCurrentSongIndex((prev) => (prev - 1 + currentPlaylist.length) % currentPlaylist.length);
+    pendingResumeSecondsRef.current = 0;
+    hasAppliedResumeSeekRef.current = true;
+    setCurrentTime(0);
+    currentTimeRef.current = 0;
+    const prevIdx = (currentSongIndexRef.current - 1 + currentPlaylist.length) % currentPlaylist.length;
+    loadedVideoIdRef.current = null;
+    setCurrentSongIndex(prevIdx);
     setPlaying(true);
+    savePlaybackState(prevIdx, 0, volumeRef.current, currentPlaylist);
   };
 
   const seekTo = (seconds: number) => {
     setCurrentTime(seconds);
+    currentTimeRef.current = seconds;
+    pendingResumeSecondsRef.current = seconds;
     if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
       playerRef.current.seekTo(seconds, true);
     }
+    savePlaybackState(currentSongIndexRef.current, seconds, volumeRef.current, playlistRef.current);
   };
 
   const handleVolumeChange = (vol: number) => {
     setVolumeState(vol);
+    volumeRef.current = vol;
     if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
       playerRef.current.setVolume(vol);
     }
+    savePlaybackState(currentSongIndexRef.current, currentTimeRef.current, vol, playlistRef.current);
   };
 
   const addToPlaylist = (song: Song) => {
     if (playlist.some((s) => s.videoId === song.videoId)) {
-      alert('Song already in playlist!');
       return;
     }
     setPlaylist((prev) => [...prev, song]);
@@ -424,30 +679,95 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
   const removeFromPlaylist = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (playlist.length <= 1) {
-      alert('Cannot delete the last song!');
       return;
     }
-    setPlaylist((prev) => prev.filter((_, idx) => idx !== index));
+    const nextList = playlist.filter((_, idx) => idx !== index);
+    setPlaylist(nextList);
     if (currentSongIndex === index) {
-      setCurrentSongIndex(0);
-      setPlaying(false);
+      pendingResumeSecondsRef.current = 0;
+      hasAppliedResumeSeekRef.current = true;
+      setCurrentTime(0);
+      currentTimeRef.current = 0;
+      loadedVideoIdRef.current = null;
+      const nextIdx = index >= nextList.length ? 0 : index;
+      setCurrentSongIndex(nextIdx);
+      savePlaybackState(nextIdx, 0, volumeRef.current, nextList);
     } else if (currentSongIndex > index) {
-      setCurrentSongIndex((prev) => prev - 1);
+      const adjustedIdx = currentSongIndex - 1;
+      setCurrentSongIndex(adjustedIdx);
+      savePlaybackState(adjustedIdx, currentTimeRef.current, volumeRef.current, nextList);
     }
+  };
+
+  const moveSongInPlaylist = (fromIndex: number, toIndex: number) => {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= playlist.length ||
+      toIndex >= playlist.length
+    ) {
+      return;
+    }
+
+    const updated = [...playlist];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+
+    let newCurrentIndex = currentSongIndex;
+    if (currentSongIndex === fromIndex) {
+      newCurrentIndex = toIndex;
+    } else if (fromIndex < currentSongIndex && toIndex >= currentSongIndex) {
+      newCurrentIndex = currentSongIndex - 1;
+    } else if (fromIndex > currentSongIndex && toIndex <= currentSongIndex) {
+      newCurrentIndex = currentSongIndex + 1;
+    }
+
+    setPlaylist(updated);
+    setCurrentSongIndex(newCurrentIndex);
+    savePlaybackState(newCurrentIndex, currentTimeRef.current, volumeRef.current, updated);
   };
 
   const playSearchedSong = (song: Song) => {
     wantPlayingRef.current = true;
+    pendingResumeSecondsRef.current = 0;
+    hasAppliedResumeSeekRef.current = true;
+    setCurrentTime(0);
+    currentTimeRef.current = 0;
+    loadedVideoIdRef.current = null;
+
     const existingIndex = playlist.findIndex((s) => s.videoId === song.videoId);
     if (existingIndex !== -1) {
       setCurrentSongIndex(existingIndex);
       setPlaying(true);
+      savePlaybackState(existingIndex, 0, volumeRef.current, playlist);
     } else {
       const updatedPlaylist = [...playlist, song];
       setPlaylist(updatedPlaylist);
-      setCurrentSongIndex(updatedPlaylist.length - 1);
+      const newIdx = updatedPlaylist.length - 1;
+      setCurrentSongIndex(newIdx);
       setPlaying(true);
+      savePlaybackState(newIdx, 0, volumeRef.current, updatedPlaylist);
     }
+  };
+
+  const resetPlaylistToDefault = () => {
+    wantPlayingRef.current = true;
+    pendingResumeSecondsRef.current = 0;
+    hasAppliedResumeSeekRef.current = true;
+    setCurrentTime(0);
+    currentTimeRef.current = 0;
+    loadedVideoIdRef.current = null;
+    setPlaylist(DEFAULT_PLAYLIST);
+    setCurrentSongIndex(0);
+    setPlaying(true);
+    setCompletedSongs([]);
+    if (playerRef.current?.seekTo && currentSong?.videoId === DEFAULT_PLAYLIST[0].videoId) {
+      loadedVideoIdRef.current = DEFAULT_PLAYLIST[0].videoId;
+      playerRef.current.seekTo(0, true);
+      playerRef.current.playVideo?.();
+    }
+    savePlaybackState(0, 0, volumeRef.current, DEFAULT_PLAYLIST);
   };
 
   return (
@@ -471,7 +791,10 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
         seekTo,
         addToPlaylist,
         removeFromPlaylist,
+        moveSongInPlaylist,
         playSearchedSong,
+        selectSongAtIndex,
+        resetPlaylistToDefault,
       }}
     >
       {children}

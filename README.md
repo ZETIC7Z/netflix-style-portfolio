@@ -50,8 +50,8 @@
 
 ### 4. 🎵 Built-In SWS YouTube Music Player (`SWSMusicPlayer.tsx` & `AudioPlayerContext.tsx`)
 - **Ported 1:1 from SWS Skeptrons (`sws-website`):** Full-featured YouTube IFrame API music player styled in **ZETICUZ Crimson & Obsidian** (`#e5132b` / `#ff3d5a` / `#0b0b12`).
-- **Default Autoplay Track (`2344s` / `39:04`):** Starts automatically on *"OPM Trending Playlist 2026 — Must Listen Filipino Songs Mix"* (`https://www.youtube.com/watch?v=iNsO2CbCV0Y&t=2344s`), followed by curated community and hip-hop tracks.
-- **Live YouTube Data API v3 Search & Queue Management:** Search any song on YouTube directly inside the player, play immediately or click `+` to add to your queue, reorder/delete tracks in `Playing Next`, adjust volume (`0–100%`), scrub timestamps, minimize, or expand to fullscreen.
+- **Starts at `0:00` on Fresh Browsers & Auto-Resumes in Same Browser:** Opens at **`0:00`** on *"OPM Trending Playlist 2026 — Must Listen Filipino Songs Mix"* (`https://www.youtube.com/watch?v=iNsO2CbCV0Y`) for any new browser visitor, and automatically syncs & resumes your exact playback timestamp, active track, and custom playlist when you close and reopen the site in the same browser.
+- **Live YouTube Data API v3 Search, Queue & Reordering:** Search any song on YouTube directly inside the player, play immediately or click `+` to add to your queue, rearrange tracks in `Playing Next` via **Drag-and-Drop (`⋮⋮`)** or **Move Up (`↑`) / Move Down (`↓`)** controls, remove tracks, adjust volume (`0–100%`), scrub timestamps, minimize, or expand to fullscreen.
 - **Dual Synchronized Controls:** Accessible both as a full horizontal deck on the Home Page and as a live mini-pill + popover player in the top Navbar.
 
 ### 5. 🎮 Authentic GTA Menu Sound Engine (`src/hooks/sound.tsx`)

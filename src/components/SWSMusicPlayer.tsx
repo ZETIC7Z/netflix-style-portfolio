@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAudioPlayer, DEFAULT_PLAYLIST, type Song } from '../context/AudioPlayerContext';
+import { useAudioPlayer, type Song } from '../context/AudioPlayerContext';
 
 /* Exact Lucide-equivalent inline SVG icons (zero external icon bundle overhead) */
 const PlayIcon = ({ size = 15, className = '' }: { size?: number; className?: string }) => (
@@ -113,26 +113,48 @@ const MusicIcon = ({ size = 28, className = '' }: { size?: number; className?: s
   </svg>
 );
 
+const ChevronUpIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="18 15 12 9 6 15" />
+  </svg>
+);
+
+const ChevronDownIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+const GripVerticalIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="9" cy="12" r="1" />
+    <circle cx="9" cy="5" r="1" />
+    <circle cx="9" cy="19" r="1" />
+    <circle cx="15" cy="12" r="1" />
+    <circle cx="15" cy="5" r="1" />
+    <circle cx="15" cy="19" r="1" />
+  </svg>
+);
+
 export default function SWSMusicPlayer({ onClose, id = 'sws-music-player' }: { onClose?: () => void; id?: string }) {
   const {
     playlist,
-    setPlaylist,
     currentSongIndex,
-    setCurrentSongIndex,
     playing,
-    setPlaying,
     currentTime,
     duration,
     volume,
     setVolume,
-    setCompletedSongs,
     togglePlay,
     playNext,
     playPrev,
     seekTo,
     addToPlaylist,
     removeFromPlaylist,
+    moveSongInPlaylist,
     playSearchedSong,
+    selectSongAtIndex,
+    resetPlaylistToDefault,
   } = useAudioPlayer();
 
   const [showPlaylist, setShowPlaylist] = useState(false);
@@ -140,6 +162,8 @@ export default function SWSMusicPlayer({ onClose, id = 'sws-music-player' }: { o
   const [showOptions, setShowOptions] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -597,18 +621,15 @@ export default function SWSMusicPlayer({ onClose, id = 'sws-music-player' }: { o
             <button
               type="button"
               onClick={() => {
-                setPlaylist(DEFAULT_PLAYLIST);
-                setCurrentSongIndex(0);
-                setPlaying(true);
+                resetPlaylistToDefault();
                 setShowOptions(false);
-                setCompletedSongs([]);
               }}
               className="w-full cursor-pointer rounded border border-crimson-2/40 bg-crimson/15 py-2 text-center text-xs font-bold uppercase tracking-wider text-crimson-2 transition-colors hover:bg-crimson/25"
             >
-              Reset Playlist to Default
+              Reset Playlist to Default (0:00)
             </button>
             <p className="text-center text-[10px] text-mist">
-              Search icon is located in the bottom toolbar to add custom tracks.
+              Search icon adds tracks · Playing Next lets you drag or ↑↓ reorder tracks. Your playlist & playback timestamp auto-resume in this browser.
             </p>
           </div>
         </div>
@@ -618,9 +639,14 @@ export default function SWSMusicPlayer({ onClose, id = 'sws-music-player' }: { o
       {showPlaylist && (
         <div className="absolute inset-0 z-20 flex flex-col rounded-xl border border-crimson-2/25 bg-[#09090f]/95 p-4 text-bone backdrop-blur-md">
           <div className="mb-2 flex items-center justify-between border-b border-crimson-2/20 pb-1">
-            <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-crimson-2">
-              <ListIcon size={12} /> Playing Next ({playlist.length})
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-crimson-2">
+                <ListIcon size={12} /> Playing Next ({playlist.length})
+              </span>
+              <span className="hidden text-[9px] uppercase tracking-wider text-smoke sm:inline">
+                · Drag or ↑↓ to rearrange
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setShowPlaylist(false)}
@@ -633,31 +659,83 @@ export default function SWSMusicPlayer({ onClose, id = 'sws-music-player' }: { o
           <div className="flex-1 space-y-1.5 overflow-y-auto pr-1 text-[11px]">
             {playlist.map((song, idx) => (
               <div
-                key={song.videoId + idx}
-                onClick={() => {
-                  setCurrentSongIndex(idx);
-                  setPlaying(true);
+                key={song.videoId + '-' + idx}
+                draggable
+                onDragStart={() => setDraggedIdx(idx)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (dragOverIdx !== idx) setDragOverIdx(idx);
                 }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggedIdx !== null && draggedIdx !== idx) {
+                    moveSongInPlaylist(draggedIdx, idx);
+                  }
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                onClick={() => selectSongAtIndex(idx)}
                 className={`flex cursor-pointer items-center gap-2 rounded border p-1.5 transition-colors ${
-                  idx === currentSongIndex
-                    ? 'border-crimson-2/50 bg-crimson/20'
-                    : 'border-transparent bg-black/40 hover:bg-crimson/10'
+                  dragOverIdx === idx && draggedIdx !== idx
+                    ? 'border-crimson-2 bg-crimson/30'
+                    : idx === currentSongIndex
+                      ? 'border-crimson-2/50 bg-crimson/20'
+                      : 'border-transparent bg-black/40 hover:bg-crimson/10'
                 }`}
               >
+                <span
+                  className="cursor-grab text-smoke/70 hover:text-crimson-2 active:cursor-grabbing"
+                  title="Drag to reorder"
+                >
+                  <GripVerticalIcon size={12} />
+                </span>
                 <span className="w-4 text-center font-mono text-crimson-2/60">{idx + 1}</span>
                 <img src={song.albumArt} alt="" className="h-8 w-8 rounded object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[10px] font-bold text-bone">{song.songName}</p>
                   <p className="truncate text-[9px] text-mist">{song.authorName}</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={(e) => removeFromPlaylist(idx, e)}
-                  className="cursor-pointer p-1.5 text-smoke transition-colors hover:text-crimson-2"
-                  title="Remove from playlist"
-                >
-                  <Trash2Icon size={12} />
-                </button>
+                <div className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    disabled={idx === 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moveSongInPlaylist(idx, idx - 1);
+                    }}
+                    className="cursor-pointer rounded p-1 text-smoke transition-colors hover:bg-white/5 hover:text-crimson-2 disabled:cursor-not-allowed disabled:opacity-25"
+                    title="Move track up"
+                    aria-label="Move track up"
+                  >
+                    <ChevronUpIcon size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={idx === playlist.length - 1}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moveSongInPlaylist(idx, idx + 1);
+                    }}
+                    className="cursor-pointer rounded p-1 text-smoke transition-colors hover:bg-white/5 hover:text-crimson-2 disabled:cursor-not-allowed disabled:opacity-25"
+                    title="Move track down"
+                    aria-label="Move track down"
+                  >
+                    <ChevronDownIcon size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => removeFromPlaylist(idx, e)}
+                    className="cursor-pointer rounded p-1.5 text-smoke transition-colors hover:bg-white/5 hover:text-crimson-2"
+                    title="Remove from playlist"
+                    aria-label="Remove from playlist"
+                  >
+                    <Trash2Icon size={12} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

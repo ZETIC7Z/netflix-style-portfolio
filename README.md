@@ -24,13 +24,13 @@
 
 **Sam Pangilinan** (`ZETICUZ` / `ZETIC7Z` / `TECHNOLOHIYA`) — **AI-First Full-Stack & Rust Engineer, GovTech Architect & 3D Web Systems Developer** with **7+ years** of production experience across enterprise operations, public-sector digital infrastructure, native Rust desktop applications, and high-availability streaming platforms.
 
-- 🎓 **Education:** Diploma in Computer Engineering Technology (2-Year Vocational Program, 2016–2018) — **Comtech Institute (Computer Technologies Institute of Basilan, Inc.)**
-- 🏛️ **Public Sector & Enterprise Experience:** DSWD (AICS Crisis Intervention Operations), Accenture Philippines, The Winter Press (Melbourne), University of San Carlos, DENR, Zinex Humphrey Visual Field Analyzer Systems, and Southwest Construction.
+- 🎓 **Education:** Associate in Computer Engineering Technician (2-Year Vocational College Diploma, 101 Units Earned, 2014–2016) — **Computer Technologies Institute (COMTECH) Inc., Zamboanga City**
+- 🏛️ **Public Sector & Enterprise Experience:** DSWD (AICS Crisis Intervention Operations), Accenture Philippines, Legacy Group Real Estate (USA), The Winter Press (Melbourne), University of San Carlos, DENR, Zinex Cinematic, and Southwest Ticket & Tours.
 - 🔗 **GitHub:** [github.com/ZETIC7Z](https://github.com/ZETIC7Z) (51+ repositories)
 - 📺 **YouTube:** [@ZETICUZ](https://www.youtube.com/@ZETICUZ)
 - 📘 **Facebook:** [facebook.com/sambabao.pangilinan](https://www.facebook.com/sambabao.pangilinan/)
-- 📧 **Email:** [samxerz.zeticuz@gmail.com](mailto:samxerz.zeticuz@gmail.com)
-- 📍 **Location:** Cebu City / Lamitan City, Philippines
+- 📧 **Email:** [samxerz12@gmail.com](mailto:samxerz12@gmail.com) · [samxerz.zeticuz@gmail.com](mailto:samxerz.zeticuz@gmail.com)
+- 📍 **Location:** Cebu City / Zamboanga City / Lamitan City, Philippines
 
 ---
 
@@ -41,8 +41,8 @@
 - **Continue Watching Rail:** Tracks your viewing progress across sections (`Originals`, `Story`, `Journey`, `Skills`, `Top Moments`, `Resume`) in real time using `IntersectionObserver`.
 
 ### 2. 📺 5-Season Auto-Advancing Career Journey (`Seasons.tsx`)
-- **Chronological 5-Season Player (`S01` → `S05` → `S01`):** Automatically starts at **Season 1 (2016–2018)** and advances smoothly every **12 seconds** through **Season 5 (2025–2026)** before looping back to Season 1, with pause-on-hover and manual season/episode selection.
-- **Dedicated Institutional Cards:** Every organization and government agency has its own dedicated episode card and verified institutional emblem (`Comtech Institute`, `Zinex`, `DENR`, `Southwest Construction`, `BPAT`, `DICT`, `The Winter Press`, `University of San Carlos`, `DSWD`, `Accenture Philippines`, `Zetica Creative Suite`, and `ZETICUZ Studio`).
+- **Chronological 5-Season Player (`S01` → `S05` → `S01`):** Automatically starts at **Season 1** and advances smoothly every **12 seconds** through **Season 5** before looping back to Season 1, with pause-on-hover and manual season/episode selection.
+- **Dedicated Institutional Cards:** Every organization and government agency has its own dedicated episode card and verified institutional emblem (`COMTECH Inc.`, `Zinex`, `DENR`, `Southwest Ticket & Tours`, `BPAT`, `DICT`, `Legacy Group Real Estate USA`, `University of San Carlos`, `DSWD`, `Accenture Philippines`, `Zetica Creative Suite`, and `ZETICUZ Studio`).
 
 ### 3. 🎥 12 Flagship "Originals" with 1080p HD Video Trailers (`Originals.tsx` & `ProjectModal.tsx`)
 - **Strictly Sorted Newest-First by GitHub Creation Date:** Displays all **12 flagship production projects** in a sticky horizontal showcase rail and interactive filterable catalog.
@@ -61,33 +61,33 @@
   - Instant global mute/unmute via the top Navbar **`SFX ON` / `SFX OFF`** toggle.
 
 ### 6. 🧠 Bespoke SVG Skills Universe (`Skills.tsx` & `SkillIcons.tsx`)
-- **58+ Custom Multi-Color Vector Brand Icons:** Every technology across all 5 engineering domains (`Frontend & 3D Web`, `Backend & Real-Time APIs`, `AI & Agentic Engineering`, `Streaming, Media & Security`, and `GovTech & Enterprise Ops`) renders its own bespoke SVG icon—including `Rust`, `React`, `TypeScript`, `Three.js`, `REA (Reverse Engineer Anything)`, `Chrome DevTools MCP`, `Playwright MCP`, `Firecrawl MCP`, `Context7 MCP`, `CS Form 212 PDF Engine`, and `3D GIS / KML Engine`.
+- **58+ Custom Multi-Color Vector Brand Icons:** Every technology across all 6 engineering domains (`Frontend & 3D WebGL`, `Backend, Streaming & APIs`, `Databases & Cloud Auth`, `AI & Agentic Engineering`, `DevOps, GIS & Quality`, and `GovTech & Enterprise Ops`) renders its own bespoke SVG icon—including `Rust & WebGPU`, `React`, `TypeScript`, `Three.js`, `REA (Reverse Engineering)`, `Claude Code & Antigravity`, `Chrome DevTools & Playwright MCP`, `Firecrawl & Context7 MCP`, `CS Form 212 PDF Engine`, and `3D GIS / KML Engine`.
 
 ### 7. 🏆 Paginated Top Moments & Official Credentials Viewer (`Achievements.tsx` & `ResumeModal.tsx`)
-- **Interactive Prev / Next Carousel:** Browse separated project milestones with smooth pagination, dot indicators, and keyboard arrow navigation.
+- **Interactive Prev / Next Carousel:** Browse 16 separated project and career milestones with smooth pagination, dot indicators, and keyboard arrow navigation.
 - **Embedded PDF Viewers:** View or download Sam Pangilinan's official **2-Page Resume (`Sam_Pangilinan_Resume.pdf`)** and **13-Page Scanned Certificates (`Sam_Pangilinan_Certificates.pdf`)** directly inside the site.
 
 ### 8. 📬 Direct AJAX Contact Form & Social Hub (`FinalCTA.tsx`)
-- **Zero-Reload Inquiry Dispatch:** Sends messages directly to `samxerz.zeticuz@gmail.com` via `FormSubmit.co` AJAX API with instant delivery confirmation, paired with quick-fill inquiry templates and social links (`GitHub`, `YouTube`, `Facebook`, `Email`, `Phone`).
+- **Zero-Reload Inquiry Dispatch:** Sends messages directly via `FormSubmit.co` AJAX API with instant delivery confirmation, paired with quick-fill inquiry templates and social links (`GitHub`, `YouTube`, `Facebook`, `Email`, `Phone`).
 
 ---
 
-## 🛠️ Featured "Originals" Catalog (12 Production Projects)
+## 🛠️ Featured "Originals" Catalog (12 Production Projects — Sorted Newest First)
 
-| # | Project Title | Date | Category | Live URL | GitHub Repo | Core Tech Stack |
+| # | Project Title | Created | Category | Live URL | GitHub Repo | Core Tech Stack |
 |---|---|---|---|---|---|---|
 | **01** | **Zetica Creative Suite & Hub (14 Native Rust Apps)** | Nov 2026 | Native Rust Desktop & 3D Web | [zetica.vercel.app](https://zetica.vercel.app/) | [ZETIC7Z/artcraft](https://github.com/ZETIC7Z/artcraft) | Rust, egui, WGPU, Three.js, WebGL2, GLSL, Lenis, WiX v5 MSI |
 | **02** | **Barangay Matatag — Smart 3D E-Governance Portal** | Oct 2026 | 3D GovTech & GIS Platform | [smart-brgy.vercel.app](https://smart-brgy.vercel.app/) | [ZETIC7Z/Barangay-Online-E-Governance-Portal](https://github.com/ZETIC7Z/Barangay-Online-E-Governance-Portal) | React 18, TypeScript, Google Maps 3D, Express, Socket.IO, MongoDB |
-| **03** | **CLIENT QMS — DSWD AICS Queuing & Verification** | Sep 2026 | GovTech Operations | [client-qms.vercel.app](https://client-qms.vercel.app/) | [ZETIC7Z/CLIENT-QMS](https://github.com/ZETIC7Z/CLIENT-QMS) | React 19, TypeScript, Tailwind v4, Express, LowDB, QR Scanner, Web Audio |
-| **04** | **CareerForm PH — CSC Form 212 & Jobs Portal** | Aug 2026 | GovTech & AI Document Suite | [careerform-ph.vercel.app](https://careerform-ph.vercel.app/) | [ZETIC7Z/CareerForm](https://github.com/ZETIC7Z/CareerForm) | Next.js 15, React 19, TypeScript, pdf-lib, Three.js, MongoDB |
-| **05** | **NEXUS v2 — Next-Gen Streaming & Cuts Platform** | Jul 2026 | Flagship Streaming PWA | [nexusph.xyz](https://www.nexusph.xyz/) | [ZETIC7Z/nexus.20](https://github.com/ZETIC7Z/nexus.20) | React 18, TypeScript, Vite, Zustand, HLS.js, Node.js, AES-GCM |
-| **06** | **SWS Skeptrons — Official Chapter Platform** | Jun 2026 | Full-Stack Community Portal | [sws-skeptrons.vercel.app](https://sws-skeptrons.vercel.app/) | [ZETIC7Z/sws-website](https://github.com/ZETIC7Z/sws-website) | React, TypeScript, Tailwind CSS, Framer Motion, Express, MongoDB |
-| **07** | **Zinex — Humphrey Visual Field Analyzer Portal** | May 2026 | Medical Diagnostic Web App | [zinex.vercel.app](https://zinex.vercel.app/) | [ZETIC7Z/zinex](https://github.com/ZETIC7Z/zinex) | React, TypeScript, Tailwind CSS, Vite, Medical UI |
-| **08** | **AI Photo Editor — Browser Studio** | Apr 2026 | AI Creative Tooling | [ai-photo-editor-zeta.vercel.app](https://ai-photo-editor-zeta.vercel.app/) | [ZETIC7Z/ai-photo-editor](https://github.com/ZETIC7Z/ai-photo-editor) | React, TypeScript, HTML5 Canvas, WebGL Filters, AI Vision |
-| **09** | **VaultGuard — Zero-Knowledge Security Vault** | Mar 2026 | Cybersecurity & Cryptography | [vaultguard-ten.vercel.app](https://vaultguard-ten.vercel.app/) | [ZETIC7Z/vaultguard](https://github.com/ZETIC7Z/vaultguard) | React, TypeScript, Web Crypto API, AES-256-GCM, Tailwind CSS |
-| **10** | **Prism Flux — 3D Shader & Motion Lab** | Feb 2026 | 3D WebGL & Shaders | [prism-flux.vercel.app](https://prism-flux.vercel.app/) | [ZETIC7Z/prism-flux](https://github.com/ZETIC7Z/prism-flux) | Three.js, GLSL Shaders, GSAP ScrollTrigger, React, Vite |
-| **11** | **Aurora Atelier — Luxury Editorial Showcase** | Jan 2026 | Editorial Design Engineering | [aurora-atelier.vercel.app](https://aurora-atelier.vercel.app/) | [ZETIC7Z/aurora-atelier](https://github.com/ZETIC7Z/aurora-atelier) | React, TypeScript, Framer Motion, Lenis Smooth Scroll, Tailwind CSS |
-| **12** | **ZETICUZ Main Portfolio (`zeticuz.xyz`)** | Dec 2025 | 37-Theme Full-Stack Portfolio | [zeticuz.xyz](https://www.zeticuz.xyz/) | [ZETIC7Z/zeticuz-portfolio](https://github.com/ZETIC7Z/zeticuz-portfolio) | React 18, Vite, Tailwind v4, DaisyUI v5, Node.js Serverless, Vercel Blob |
+| **03** | **CLIENT QMS — DSWD AICS Queuing & Verification** | Oct 2026 | GovTech Operations | [client-qms.vercel.app](https://client-qms.vercel.app/) | [ZETIC7Z/CLIENT-QMS](https://github.com/ZETIC7Z/CLIENT-QMS) | React 19, TypeScript, Tailwind v4, Express, LowDB, QR Scanner, Web Audio |
+| **04** | **CareerForm PH — CSC Form 212 & Jobs Portal** | Sep 2026 | GovTech & AI Document Suite | [careerform-ph.vercel.app](https://careerform-ph.vercel.app/) | [ZETIC7Z/CareerForm](https://github.com/ZETIC7Z/CareerForm) | Next.js 15, React 19, TypeScript, pdf-lib, Three.js, MongoDB |
+| **05** | **LifeCoachDoc v2 — Clinical Psychology Portfolio** | Sep 2026 | 3D WebGL & Healthcare UI | [lifecoachdoc2.vercel.app](https://lifecoachdoc2.vercel.app/) | [ZETIC7Z/lifecoachdoc2](https://github.com/ZETIC7Z/lifecoachdoc2) | Next.js 15, React 19, Three.js, Radix UI, Tailwind CSS, Framer Motion |
+| **06** | **LifeCoachDoc v1 — Dark-Luxury Author Site** | Sep 2026 | 3D Book & Multi-Theme Web | [lifecoachdoc.vercel.app](https://lifecoachdoc.vercel.app/) | [ZETIC7Z/Frances-Gaik-WEBSITE](https://github.com/ZETIC7Z/Frances-Gaik-WEBSITE) | Next.js 15, React 19, Three.js, Framer Motion, 13-Palette Engine |
+| **07** | **NEXUS v2 — Next-Gen Streaming & Cuts Platform** | Aug 2026 | Flagship Streaming PWA | [nexusph.xyz](https://www.nexusph.xyz/) | [ZETIC7Z/nexus.20](https://github.com/ZETIC7Z/nexus.20) | React 18, TypeScript, Vite, Zustand, HLS.js, Node.js, AES-GCM |
+| **08** | **Dr. Nwanganga Shields — Author & Memoir Platform** | Jul 2026 | Full-Stack Editorial & Analytics | [nwanganga-shields.vercel.app](https://nwanganga-shields.vercel.app/) | [ZETIC7Z/autobiography-test](https://github.com/ZETIC7Z/autobiography-test) | TanStack Start, React, TypeScript, Supabase, Framer Motion, Recharts |
+| **09** | **SWS Skeptrons — Official Chapter Platform** | May 2026 | Full-Stack Community Portal | [sws-skeptrons.vercel.app](https://sws-skeptrons.vercel.app/) | [ZETIC7Z/sws-website](https://github.com/ZETIC7Z/sws-website) | React, TypeScript, Tailwind CSS, Framer Motion, Express, MongoDB |
+| **10** | **Dekaron Stampede — MMORPG Gaming Portal** | Mar 2026 | Interactive Gaming Hub | [dekaron-stampede.vercel.app](https://dekaron-stampede.vercel.app/) | [ZETIC7Z/dekaron-stampede](https://github.com/ZETIC7Z/dekaron-stampede) | React, TypeScript, Tailwind CSS, Framer Motion, Vite, Lucide React |
+| **11** | **ZETFLIX TV — Movie & Series Discovery Hub** | Feb 2026 | Entertainment & Streaming UI | [zetflix-tv.vercel.app](https://zetflix-tv.vercel.app/) | [ZETIC7Z/ZETFLIX-OFFICIAL](https://github.com/ZETIC7Z/ZETFLIX-OFFICIAL) | React, Node.js, MongoDB, Material-UI, TMDB API, Supabase, Redux |
+| **12** | **NEXUS Streaming (v1) — High-Availability PWA** | Jan 2026 | Streaming PWA | [zeticuz.online](https://www.zeticuz.online/) | [ZETIC7Z/NEXUS](https://github.com/ZETIC7Z/NEXUS) | React, TypeScript, Tailwind CSS, Zustand, HLS.js, PWA, Vite |
 
 ---
 

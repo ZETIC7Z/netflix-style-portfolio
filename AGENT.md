@@ -1,8 +1,10 @@
-# AGENT.md — Sam Pangilinan: The Series (`Portfolio_series`)
+# AGENT.md — Sam Pangilinan: The Series (`netflix-style-portfolio`)
 
 ## 1. Project Identity & Developer
 - **Owner & Protagonist:** **Sam Faus Said Zahran Pangilinan** (`Sam Pangilinan` / `ZETICUZ` / `ZETIC7Z` / `TECHNOLOHIYA`)
-- **Portfolio Website:** `https://www.zeticuz.xyz/`
+- **Live Series URLs:** `https://zetiuz-generative.vercel.app/` · `https://zeticuz-generative.vercel.app/` · `https://netflix-style-portfolio.vercel.app/`
+- **GitHub Repository:** `https://github.com/ZETIC7Z/netflix-style-portfolio`
+- **Main Portfolio Website:** `https://www.zeticuz.xyz/`
 - **Email & Phone:** `samxerz12@gmail.com` · `+63310988089`
 - **Workspace Path:** `C:\Users\ZETICUZ\Documents\portfolio netflix\Portfolio_series`
 - **Local Dev Server:** `npx vite --port 5175 --host` (`http://localhost:5175/`)

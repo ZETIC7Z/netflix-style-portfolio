@@ -1,0 +1,41 @@
+{
+  "name": "netflix-style-portfolio",
+  "private": false,
+  "version": "1.0.0",
+  "description": "Sam Pangilinan — The Series | Cinematic Netflix-Style Portfolio for Sam Pangilinan (ZETICUZ / TECHNOLOHIYA), AI-First Full-Stack & Rust Engineer.",
+  "author": "Sam Pangilinan (ZETICUZ) <samxerz.zeticuz@gmail.com> (https://www.zeticuz.xyz/)",
+  "license": "MIT",
+  "homepage": "https://zetiuz-generative.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZETIC7Z/netflix-style-portfolio.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "images": "node scripts/build-images.mjs",
+    "images:og": "node scripts/build-og-image.mjs",
+    "images:projects": "node scripts/build-project-images.mjs",
+    "trailers": "node scripts/record-trailers.mjs"
+  },
+  "dependencies": {
+    "framer-motion": "11.18.2",
+    "lenis": "1.1.20",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.4",
+    "@types/react": "18.3.20",
+    "@types/react-dom": "18.3.6",
+    "@vitejs/plugin-react": "4.4.1",
+    "ffmpeg-static": "^5.3.0",
+    "playwright": "^1.65.0",
+    "sharp": "0.34.1",
+    "tailwindcss": "4.1.4",
+    "typescript": "5.8.3",
+    "vite": "6.3.5"
+  }
+}
